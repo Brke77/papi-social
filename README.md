@@ -154,3 +154,9 @@ Supabase projelerinde `supabase/migrations/004_chat.sql` migration'ını da uygu
 Demo mesajları ayrı IndexedDB deposundadır; demo sıfırlaması mesajları da temizler. Gerçek kişiler arasında farklı cihazlardan konuşmak için çalışan Supabase projesi gerekir. Demo yayını bunu sağlamaz.
 
 Araştırma: [Supabase Postgres Changes](https://supabase.com/docs/guides/realtime/postgres-changes), [RLS](https://supabase.com/docs/guides/database/postgres/row-level-security). V1 için ek Realtime publication gerektirmeyen periyodik sorgulama seçildi. Geçerli oturumun RLS kuralları her sorguda uygulanır.
+
+### Sağ alt sohbet penceresi
+
+Mesaj bağlantıları artık sayfayı değiştirmeden sağ alt penceresini açar. Pencere büyütülebilir, küçültülebilir; taslak ve seçili konuşma korunur. Küçültülmüş pencere gelen mesajları okundu işaretlemez. Eski `/messages` bağlantıları da akış üzerinde sohbeti açar. Kurulum, oturum ve gönderim sınırı hataları ayrı açıklanır.
+
+Canlı veritabanında eksik olan `004_chat.sql` kurulumu 29 Ekim'de doğrulandı: `direct_messages` ve `send_direct_message(uuid,text,uuid)` mevcut. Kimliği doğrulanmış rol altında test gönderimi bir transaction içinde sınanıp rollback ile geri alındı.

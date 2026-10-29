@@ -1,4 +1,5 @@
 "use client";
+import { ChatDock } from "./chat-dock";
 import {
   createContext,
   useContext,
@@ -107,8 +108,11 @@ export function Provider({ children }: { children: ReactNode }) {
   }, [refresh]);
   useEffect(() => {
     if (mode === "supabase" && repo.current) {
-      const params=new URLSearchParams(location.search);
-      filter.current = {q:params.get('q')||'',category:params.get('category')||''};
+      const params = new URLSearchParams(location.search);
+      filter.current = {
+        q: params.get("q") || "",
+        category: params.get("category") || "",
+      };
       void refresh();
     }
   }, [pathname, refresh]);
@@ -140,7 +144,13 @@ export function Provider({ children }: { children: ReactNode }) {
   };
   async function logout() {
     if (mode === "demo") localStorage.removeItem("papi-session");
-    else { const {error}=await getBrowserClient().auth.signOut();if(error){toast('Çıkış yapılamadı. Tekrar dene.');return;} }
+    else {
+      const { error } = await getBrowserClient().auth.signOut();
+      if (error) {
+        toast("Çıkış yapılamadı. Tekrar dene.");
+        return;
+      }
+    }
     user.current = null;
     setUserId(null);
     window.location.replace(new URL("/", window.location.origin).href);
@@ -219,6 +229,7 @@ export function Provider({ children }: { children: ReactNode }) {
       }}
     >
       {children}
+      <ChatDock />
       {message && (
         <div className="toast" role="status">
           {message}

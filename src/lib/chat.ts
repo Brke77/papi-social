@@ -9,6 +9,17 @@ export type Message = {
   created_at: string;
   read_at: string | null;
 };
+export function chatError(error: { code?: string; message?: string }) {
+  if (["PGRST202", "PGRST205", "42P01", "42883"].includes(error.code || ""))
+    return "Mesajlaşma kurulumu eksik. Lütfen site yöneticisine bildir.";
+  if (error.message?.includes("rate limited"))
+    return "Çok hızlı mesaj gönderiyorsun. Bir dakika bekleyip tekrar dene.";
+  if (error.message?.includes("invalid recipient"))
+    return "Bu hesaba mesaj gönderilemiyor. Engelleme durumunu kontrol et.";
+  if (["PGRST301", "42501"].includes(error.code || ""))
+    return "Mesajlaşmak için tekrar giriş yap.";
+  return "Mesaj sunucusuna ulaşılamadı. Bağlantını kontrol edip tekrar dene.";
+}
 const db = () =>
   openDB("papi-chat-v1", 1, {
     upgrade(d) {
@@ -41,7 +52,7 @@ export async function listMessages(
   if (peerId) q = q.or(`sender_id.eq.${peerId},recipient_id.eq.${peerId}`);
   if (before) q = q.lt("created_at", before);
   const { data, error } = await q;
-  if (error) throw new Error("Mesajlar yüklenemedi.");
+  if (error) throw new Error(chatError(error));
   return (data || []).reverse();
 }
 export async function sendMessage(
@@ -71,10 +82,7 @@ export async function sendMessage(
     message_body: body,
     message_id: id,
   });
-  if (error)
-    throw new Error(
-      "Mesaj gönderilemedi. Hesap engellenmiş veya gönderim sınırına ulaşılmış olabilir.",
-    );
+  if (error) throw new Error(chatError(error));
 }
 export async function readMessages(userId: string, peerId: string) {
   if (mode === "demo") {
@@ -89,5 +97,5 @@ export async function readMessages(userId: string, peerId: string) {
   const { error } = await getBrowserClient().rpc("read_direct_messages", {
     peer: peerId,
   });
-  if (error) throw new Error("Okundu bilgisi güncellenemedi.");
+  if (error) throw new Error(chatError(error));
 }

@@ -10,7 +10,7 @@ import {
   type Message,
 } from "@/lib/chat";
 import { mode } from "@/lib/model";
-export function Chat({ username }: { username: string }) {
+export function Chat({ username, active=true }: { username: string;active?:boolean }) {
   const { state, userId, toast } = usePapi();
   const [peer, setPeer] = useState(
       state?.profiles.find((p) => p.username === username)?.id || "",
@@ -35,7 +35,7 @@ export function Chat({ username }: { username: string }) {
   );
   const selected = people.find((p) => p.id === peer);
   const load = useCallback(async () => {
-    if (!userId || !peer) return;
+    if (!userId || !peer || !active) return;
     const seq = ++request.current;
     try {
       const next = await listMessages(userId, peer);
@@ -55,7 +55,7 @@ export function Chat({ username }: { username: string }) {
       if (seq === request.current)
         setError(e instanceof Error ? e.message : "Mesajlar yüklenemedi.");
     }
-  }, [userId, peer]);
+  }, [userId, peer, active]);
   useEffect(() => {
     const initial = setTimeout(()=>void load(),0);
     const t = setInterval(() => {
