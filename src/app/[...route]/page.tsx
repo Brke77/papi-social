@@ -8,7 +8,7 @@ type Props = {
   searchParams: Promise<Record<string, string | undefined>>;
 };
 const allowed = [
-  "feed",
+  "messages", "feed",
   "explore",
   "search",
   "saved",
@@ -80,3 +80,4 @@ export default async function Page({ params, searchParams }: Props) {
     />
   );
 }
+

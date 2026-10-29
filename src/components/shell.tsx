@@ -13,6 +13,7 @@ import {
   LogOut,
   Shield,
   LayoutGrid,
+  MessageCircle,
 } from "lucide-react";
 import { usePapi } from "./provider";
 import { Avatar } from "./ui";
@@ -33,6 +34,7 @@ export function Shell({ children }: { children: ReactNode }) {
       icon: LayoutGrid,
     },
   ];
+  links.push({ href: "/messages", label: "Mesajlar", icon: MessageCircle });
   const tags = state
     ? Object.entries(
         visiblePosts(state, userId)
@@ -113,6 +115,7 @@ export function Shell({ children }: { children: ReactNode }) {
       </aside>
       <div className="workspace">
         <header className="topbar">
+          <Link href="/messages" aria-label="Mesajlar"><MessageCircle size={21}/></Link>
           <div>
             <span className="live-dot" /> Biraz ilham. Biraz sen.
           </div>

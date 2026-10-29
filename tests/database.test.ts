@@ -27,6 +27,7 @@ describe("PostgreSQL migration, RPC authorization and RLS (Supabase schemas emul
     );
     await db.exec(readFileSync("supabase/migrations/002_media.sql", "utf8"));
     await db.exec(readFileSync("supabase/migrations/003_counts.sql", "utf8"));
+    await db.exec(readFileSync("supabase/migrations/004_chat.sql", "utf8"));
     await db.query("insert into auth.users values ($1,$2),($3,$4)", [
       alice,
       JSON.stringify({ username: "alice", display_name: "Alice Test" }),
@@ -36,6 +37,60 @@ describe("PostgreSQL migration, RPC authorization and RLS (Supabase schemas emul
   }, 30000);
   afterAll(async () => {
     await db.close();
+  });
+  it("private chat validates sender, recipient, retries and read ownership", async () => {
+    await asUser(alice);
+    const id = crypto.randomUUID();
+    await db.query("select public.send_direct_message($1,$2,$3)", [
+      bob,
+      "Merhaba",
+      id,
+    ]);
+    await db.query("select public.send_direct_message($1,$2,$3)", [
+      bob,
+      "Merhaba",
+      id,
+    ]);
+    expect(
+      (await db.query("select * from public.direct_messages")).rows,
+    ).toHaveLength(1);
+    await expect(
+      db.query("select public.send_direct_message($1,$2,$3)", [
+        alice,
+        "self",
+        crypto.randomUUID(),
+      ]),
+    ).rejects.toThrow();
+    await expect(
+      db.exec(
+        `insert into public.direct_messages(sender_id,recipient_id,body) values('${bob}','${alice}','spoof')`,
+      ),
+    ).rejects.toThrow();
+    await asUser(null, "anon");
+    await expect(
+      db.exec("select * from public.direct_messages"),
+    ).rejects.toThrow();
+    await asUser(bob);
+    await db.query("select public.read_direct_messages($1)", [alice]);
+    expect(
+      (
+        await db.query<{ read_at: string }>(
+          "select read_at from public.direct_messages",
+        )
+      ).rows[0].read_at,
+    ).toBeTruthy();
+    await action({ type: "block", id: alice });
+    expect(
+      (await db.query("select * from public.direct_messages")).rows,
+    ).toHaveLength(0);
+    await expect(
+      db.query("select public.send_direct_message($1,$2,$3)", [
+        alice,
+        "blocked",
+        crypto.randomUUID(),
+      ]),
+    ).rejects.toThrow();
+    await action({ type: "block", id: alice });
   });
   it("allows owned writes through RPC and denies forged owners", async () => {
     await asUser(alice);

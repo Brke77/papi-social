@@ -20,7 +20,9 @@ export function ProfilePage({ username }: { username: string }) {
     [relations, setRelations] = useState<"followers" | "following" | null>(
       null,
     );
-  useEffect(()=>{search({tab});},[tab,search]);
+  useEffect(() => {
+    search({ tab });
+  }, [tab, search]);
   if (!state) return null;
   const profile = state.profiles.find((p) => p.username === username);
   if (!profile) return <Empty title="Bu profil bulunamadı." />;
@@ -62,6 +64,7 @@ export function ProfilePage({ username }: { username: string }) {
               <Avatar profile={profile} size={88} />
             </button>
             <div className="profile-buttons">
+            {!own&&!blocked&&<Link className="button secondary" href={`/messages?q=${profile.username}`}>Mesaj gönder</Link>}
               {own ? (
                 <Link href="/settings" className="button secondary">
                   Profili düzenle

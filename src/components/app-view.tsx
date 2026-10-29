@@ -10,6 +10,7 @@ import { Settings } from "@/features/settings";
 import { Notifications, Moderation } from "@/features/notifications";
 import { PostCard } from "./post-card";
 import { visiblePosts } from "@/lib/model";
+import { Chat } from "@/features/chat";
 export function AppView({
   route,
   query = "",
@@ -44,7 +45,14 @@ export function AppView({
     );
   else if (
     !userId &&
-    ["create", "settings", "saved", "notifications", "admin"].includes(name)
+    [
+      "create",
+      "settings",
+      "saved",
+      "notifications",
+      "admin",
+      "messages",
+    ].includes(name)
   )
     content = (
       <div className="empty">
@@ -64,6 +72,8 @@ export function AppView({
           initialCategory={category}
         />
       );
+    else if (name === "messages")
+      content = <Chat key={query} username={query} />;
     else if (name === "create") content = <Composer edit={edit} />;
     else if (name === "u") content = <ProfilePage username={route[1]} />;
     else if (name === "settings") content = <Settings />;

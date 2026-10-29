@@ -66,6 +66,13 @@ export class DemoRepository implements Repository {
     });
   }
   async reset() {
+    const chat = await openDB("papi-chat-v1", 1, {
+      upgrade(d) {
+        d.createObjectStore("messages", { keyPath: "id" });
+      },
+    });
+    await chat.clear("messages");
+    chat.close();
     const d = await db();
     await d.put("data", seed(), "state");
   }

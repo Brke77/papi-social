@@ -144,3 +144,13 @@ Ekran görüntüleri: [masaüstü akış](docs/feed-desktop.png), [açılış](d
 Cursor sayfalama, sunucuda tam metin arama ve kişiselleştirme; Realtime bildirimleri; erişilebilirlik denetimi; hesap veri dışa aktarma/silme başvuru süreçleri; moderasyon itirazları ve medya işleme kuyruğu. Video, DM, canlı yayın veya ödeme sistemi bu sürüme eklenmedi.
 
 Teknik araştırma ve kararlar: [docs/decisions.md](docs/decisions.md). Görsellerin kaynakları: [docs/assets.md](docs/assets.md).
+
+## Birebir mesajlaşma (29 Ekim güncellemesi)
+
+`/messages` sayfası ve profil üzerindeki **Mesaj gönder** bağlantısı eklendi. Metin mesajı sınırı 2.000 karakterdir. Eski mesajlar 50 kayıtlık sayfalarla yüklenir; açık konuşma görünürken dört saniyede bir yenilenir. Katılımcı mesajları okuduğunda okundu durumu güncellenir. Başarısız gönderim metni korur; aynı gönderimin yeniden denenmesi aynı UUID ile çift kaydı önler.
+
+Supabase projelerinde `supabase/migrations/004_chat.sql` migration'ını da uygulayın. Tablo yalnızca katılımcılara okuma izni verir, yazma dar kapsamlı RPC üzerinden yapılır. Engelleme iki yönlü kontrol edilir. Gönderim limiti kullanıcı başına dakikada 30 mesajdır. Mesaj içeriği React metni olarak gösterilir. Bu sürüm uçtan uca şifreleme veya dosya gönderme sunmaz.
+
+Demo mesajları ayrı IndexedDB deposundadır; demo sıfırlaması mesajları da temizler. Gerçek kişiler arasında farklı cihazlardan konuşmak için çalışan Supabase projesi gerekir. Demo yayını bunu sağlamaz.
+
+Araştırma: [Supabase Postgres Changes](https://supabase.com/docs/guides/realtime/postgres-changes), [RLS](https://supabase.com/docs/guides/database/postgres/row-level-security). V1 için ek Realtime publication gerektirmeyen periyodik sorgulama seçildi. Geçerli oturumun RLS kuralları her sorguda uygulanır.
